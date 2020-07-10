@@ -1,7 +1,5 @@
 shinyServer(function(input, output, session) {
   fm <- FutureManager$new()
-  appState <- new.env()
-  
   cs <- list(class1 = 123, class2 = 456)
   
   # Sidebar menu --------------------------------------------------------------
@@ -11,10 +9,10 @@ shinyServer(function(input, output, session) {
       tagList(
         fmRunButton(
           inputId = "plot_run",
-          appState = appState,
+          fm = fm,
           cs = cs
         ),
-        br(),
+        hr(),
         selectInput(
           inputId = "xVar",
           label = "X var",
@@ -32,10 +30,10 @@ shinyServer(function(input, output, session) {
       tagList(
         fmRunButton(
           inputId = "table_run",
-          appState = appState,
+          fm = fm,
           cs = cs
         ),
-        br(),
+        hr(),
         sliderInput(
           inputId = "nRows",
           label = "Number of rows",
@@ -50,6 +48,7 @@ shinyServer(function(input, output, session) {
   # Plot tab ------------------------------------------------------------------
   PlotObj <- reactiveVal()
   PlotArgs <- reactive({
+    print("Plot args")
     list(
       xVar = input$xVar,
       yVar = input$yVar
@@ -57,12 +56,11 @@ shinyServer(function(input, output, session) {
   })
   
   fmRegisterRunObserver(
-    id = "plot_run",
+    inputId = "plot_run",
     label = "Plot",
     statusVar = PlotObj,
     longFun = plotLongFun,
     input = input,
-    appState = appState,
     fm = fm,
     Args = PlotArgs
   )
@@ -77,16 +75,16 @@ shinyServer(function(input, output, session) {
   # Table tab -----------------------------------------------------------------
   TableObj <- reactiveVal()
   TableArgs <- reactive({
+    print("Table args")
     list(nRows = input$nRows)
   })
   
   fmRegisterRunObserver(
-    id = "table_run",
+    inputId = "table_run",
     label = "Table",
     statusVar = TableObj,
     longFun = tableLongFun,
     input = input,
-    appState = appState,
     fm = fm,
     Args = TableArgs
   )

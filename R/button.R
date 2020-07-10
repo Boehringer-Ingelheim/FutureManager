@@ -1,12 +1,9 @@
 #' @export
-fmRunButton <- function(inputId, appState, cs, defaultValue = FALSE, allowOneClass = FALSE){
-  if (is.null(appState[[inputId]])){
-    appState[[inputId]] <- list(
-      value = defaultValue,
-      style = "default",
-      disabled = FALSE
-    )
-  }
+fmRunButton <- function(inputId, fm, cs, defaultValue = FALSE, allowOneClass = FALSE){
+  buttonState <- fm$initButtonState(
+    inputId = inputId,
+    defaultValue = defaultValue
+  )
   
   operator <- if (allowOneClass) `&&` else `||`
   
@@ -14,15 +11,15 @@ fmRunButton <- function(inputId, appState, cs, defaultValue = FALSE, allowOneCla
     style <- "warning"
     disabled <- TRUE
   } else {
-    style <- appState[[inputId]]$style
-    disabled <- appState[[inputId]]$disabled
+    style <- buttonState$style
+    disabled <- buttonState$disabled
   }
   
   tagList(
     shinyBS::bsButton(
       inputId = inputId,
       label = NULL, # controlled in CSS
-      value = appState[[inputId]]$value,
+      value = buttonState$value,
       style = style,
       disabled = disabled,
       type = "toggle",
@@ -39,45 +36,52 @@ fmRunButton <- function(inputId, appState, cs, defaultValue = FALSE, allowOneCla
 }
 
 #' @export
-fmUpdateRunButton <- function(inputId, status, appState, session = getDefaultReactiveDomain()) {
+fmUpdateRunButton <- function(inputId, status, fm, session = getDefaultReactiveDomain()) {
   isSuccess <- status == "success"
-  style <- if (isSuccess) "success" else appState[[inputId]]$style
   
-  appState[[inputId]] <- list(
+  currentState <- fm$getButtonState(inputId)
+  style <- if (isSuccess) "success" else currentState$style
+  
+  buttonState <- fm$updateButtonState(
+    inputId = inputId,
     value = FALSE,
     style = style,
     disabled = isSuccess
   )
-  
+
   if (status == "danger"){
-    print(appState[[inputId]])
+    print(buttonState)
   }
-  
   shinyBS::updateButton(
     session = session,
     inputId = inputId,
-    value = appState[[inputId]]$value,
-    style = appState[[inputId]]$style,
-    disabled = appState[[inputId]]$disabled
+    value = buttonState$value,
+    style = buttonState$style,
+    disabled = buttonState$disabled
   )
 }
 
 #' @export
-fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState, fm, Args,
+fmRegisterRunObserver <- function(inputId, label, statusVar, longFun, input, fm, Args,
                                   opts = c("dbname", "dbhost", "dbport", "dbuser", "dbpass"), progress = TRUE){
-  taskId <- paste0(id, "_task")
+  taskId <- paste0(inputId, "_task")
   
   if (progress){
     fm$showProgress(taskId, label, statusVar)
   }
   
   observeEvent(
-    eventExpr = input[[id]],
+    eventExpr = input[[inputId]],
     handlerExpr = {
-      isTriggered <- input[[id]]
+      isTriggered <- input[[inputId]]
       
-      if (appState[[id]]$value != isTriggered){
-        appState[[id]]$value <- isTriggered # save the button state to avoid cache issue
+      buttonState <- fm$getButtonState(inputId)
+      
+      if (buttonState$value != isTriggered){
+        fm$updateButtonState(
+          inputId = inputId,
+          value = isTriggered # save the button state to avoid cache issue
+        )
         
         if (isTriggered){
           if (is.function(longFun)){
@@ -90,7 +94,7 @@ fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState
               statusVar = statusVar,
               opts = opts,
               finally = function(status){
-                fmUpdateRunButton(id, status, appState)
+                fmUpdateRunButton(inputId, status, fm)
               }
             )
           }
@@ -104,31 +108,7 @@ fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState
   observeEvent(
     eventExpr = Args(),
     handlerExpr = {
-      print(id)
-      fmOutdateRun(
-        name = id, 
-        appState = appState, 
-        immediate = TRUE
-      )
+      fm$outdateRun(inputId, TRUE)
     }
   )
-}
-
-#' @export
-fmOutdateRun <- function(name, appState, immediate = FALSE){
-  state <- appState[[name]]
-  if (!is.null(state) && state$style == "success"){
-    appState[[name]]$style <- "danger"
-    appState[[name]]$disabled <- FALSE
-    if (immediate){
-      fmUpdateRunButton(name, "danger", appState)
-    }
-  }
-}
-
-#' @export
-fmOutdateRuns <- function(appState){
-  for (x in names(appState)){
-    fmOutdateRun(x, appState)
-  }
 }

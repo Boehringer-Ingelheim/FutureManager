@@ -66,8 +66,8 @@ fmGetValue <- function(x) {
 }
 
 #' @export
-fmValidate <- function(x){
-  args <- fmNeed(x)
+fmValidate <- function(x, ...){
+  args <- fmNeed(x, ...)
   
   isError <- sapply(args, is.fmError)
   args$errorClass <- if (any(isError)){

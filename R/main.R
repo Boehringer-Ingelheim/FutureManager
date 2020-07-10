@@ -30,6 +30,8 @@ FutureManager <- R6::R6Class(
           }
         }
       })
+      
+      invisible(self)
     },
     
     run = function(taskId, fun, args, statusVar, opts = c(), finally = NULL, ...){
@@ -121,10 +123,71 @@ FutureManager <- R6::R6Class(
       if (!is.null(task)){
         file.create(task$cancelFile)
       }
+      
+      invisible(self)
+    },
+    
+    initButtonState = function(inputId, defaultValue = FALSE){
+      if (is.null(private$buttonState[[inputId]])){
+        private$buttonState[[inputId]] <- list(
+          value = defaultValue,
+          style = "default",
+          disabled = FALSE
+        )
+      }
+      
+      private$buttonState[[inputId]]
+    },
+    
+    getButtonState = function(inputId){
+      private$buttonState[[inputId]]
+    },
+    
+    updateButtonState = function(inputId, value, style, disabled){
+      if (!missing(value)){
+        private$buttonState[[inputId]]$value <- value
+      }
+      
+      if (!missing(style)){
+        private$buttonState[[inputId]]$style <- style
+      }
+      
+      if (!missing(disabled)){
+        private$buttonState[[inputId]]$disabled <- disabled
+      }
+      
+      private$buttonState[[inputId]]
+    },
+    
+    outdateRun = function(inputId, immediate = FALSE){
+      buttonState <- self$getButtonState(inputId)
+      
+      if (!is.null(buttonState) && buttonState$style == "success"){
+        self$updateButtonState(
+          inputId = inputId,
+          style = "danger",
+          disabled = FALSE
+        )
+        
+        if (immediate){
+          fmUpdateRunButton(inputId, "danger", self)
+        }
+      }
+      
+      invisible(self)
+    },
+    
+    outdateRuns = function(immediate = FALSE){
+      for (inputId in names(private$buttonState)){
+        self$outdateRun(inputId, immediate)
+      }
+      
+      invisible(self)
     }
   ),
   private = list(
     tasks = list(),
+    buttonState = list(),
     
     addTask = function(task) {
       taskId <- task$id
