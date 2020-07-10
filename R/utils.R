@@ -89,25 +89,6 @@ fmNeed <- function(x, msgInit = "run the process first", msgRun = "wait for the 
   )
 }
 
-#' @export
-fmOutdateRun <- function(name, appState, immediate = FALSE){
-  state <- appState[[name]]
-  if (!is.null(state) && state$style == "success"){
-    appState[[name]]$style <- "danger"
-    appState[[name]]$disabled <- FALSE
-    if (immediate){
-      fmUpdateRunButton(name, "danger", appState)
-    }
-  }
-}
-
-#' @export
-fmOutdateRuns <- function(appState){
-  for (x in names(appState)){
-    fmOutdateRun(x, appState)
-  }
-}
-
 # internal utils --------------------------------------------------------------
 fmUpdateTimestamp <- function(statusVar) {
   s <- statusVar()

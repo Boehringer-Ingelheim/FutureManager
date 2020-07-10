@@ -18,14 +18,23 @@ fmRunButton <- function(inputId, appState, cs, defaultValue = FALSE, allowOneCla
     disabled <- appState[[inputId]]$disabled
   }
   
-  shinyBS::bsButton(
-    inputId = inputId,
-    label = NULL, # controlled in CSS
-    value = appState[[inputId]]$value,
-    style = style,
-    disabled = disabled,
-    type = "toggle",
-    class = "fm-run"
+  tagList(
+    shinyBS::bsButton(
+      inputId = inputId,
+      label = NULL, # controlled in CSS
+      value = appState[[inputId]]$value,
+      style = style,
+      disabled = disabled,
+      type = "toggle",
+      class = "fm-run"
+    ),
+    htmltools::htmlDependency(
+      name = "FutureManager",
+      package = "FutureManager",
+      version = packageVersion("FutureManager"),
+      src = "FutureManager",
+      stylesheet = "FutureManager.css"
+    )
   )
 }
 
@@ -40,6 +49,10 @@ fmUpdateRunButton <- function(inputId, status, appState, session = getDefaultRea
     disabled = isSuccess
   )
   
+  if (status == "danger"){
+    print(appState[[inputId]])
+  }
+  
   shinyBS::updateButton(
     session = session,
     inputId = inputId,
@@ -50,11 +63,11 @@ fmUpdateRunButton <- function(inputId, status, appState, session = getDefaultRea
 }
 
 #' @export
-fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState, fm, getArgs = function() list(),
-                                  opts = c("dbname", "dbhost", "dbport", "dbuser", "dbpass"), p = TRUE){
+fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState, fm, Args,
+                                  opts = c("dbname", "dbhost", "dbport", "dbuser", "dbpass"), progress = TRUE){
   taskId <- paste0(id, "_task")
   
-  if (p){
+  if (progress){
     fm$showProgress(taskId, label, statusVar)
   }
   
@@ -68,7 +81,7 @@ fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState
         
         if (isTriggered){
           if (is.function(longFun)){
-            args <- getArgs()
+            args <- Args()
             
             fm$run(
               taskId = taskId, 
@@ -87,4 +100,35 @@ fmRegisterRunObserver <- function(id, label, statusVar, longFun, input, appState
       }
     }
   )
+  
+  observeEvent(
+    eventExpr = Args(),
+    handlerExpr = {
+      print(id)
+      fmOutdateRun(
+        name = id, 
+        appState = appState, 
+        immediate = TRUE
+      )
+    }
+  )
+}
+
+#' @export
+fmOutdateRun <- function(name, appState, immediate = FALSE){
+  state <- appState[[name]]
+  if (!is.null(state) && state$style == "success"){
+    appState[[name]]$style <- "danger"
+    appState[[name]]$disabled <- FALSE
+    if (immediate){
+      fmUpdateRunButton(name, "danger", appState)
+    }
+  }
+}
+
+#' @export
+fmOutdateRuns <- function(appState){
+  for (x in names(appState)){
+    fmOutdateRun(x, appState)
+  }
 }

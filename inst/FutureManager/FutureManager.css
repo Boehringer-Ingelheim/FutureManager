@@ -1,0 +1,27 @@
+.fm-run:after {
+  content: 'Run';
+}
+.fm-run.active:after,
+.fm-run.btn-danger.active:after {
+  content: 'Cancel';
+}
+.fm-run.btn-success:after {
+  content: 'Ready';
+}
+.fm-run.btn-danger:after {
+  content: 'Re-run required';
+}
+.fm-run.btn-danger.active {
+  color: #ffffff;
+    background-color: #95a5a6;
+    border-color: #95a5a6;
+}
+.fm-run.btn-warning:after {
+  content: 'Missing input';
+}
+.shiny-output-error-fm-failed {
+  color: red !important;
+}
+.shiny-output-error-fm-wait {
+  color: orange !important;
+}
