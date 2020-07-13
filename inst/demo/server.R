@@ -1,6 +1,5 @@
 shinyServer(function(input, output, session) {
-  fm <- FutureManager$new()
-  cs <- list(class1 = 123, class2 = 456)
+  fm <- FutureManager$new(session)
   
   # Sidebar menu --------------------------------------------------------------
   output$sidebar <- renderUI({
@@ -9,8 +8,7 @@ shinyServer(function(input, output, session) {
       tagList(
         fmRunButton(
           inputId = "plot_run",
-          fm = fm,
-          cs = cs
+          fm = fm
         ),
         hr(),
         selectInput(
@@ -30,8 +28,7 @@ shinyServer(function(input, output, session) {
       tagList(
         fmRunButton(
           inputId = "table_run",
-          fm = fm,
-          cs = cs
+          fm = fm
         ),
         hr(),
         sliderInput(

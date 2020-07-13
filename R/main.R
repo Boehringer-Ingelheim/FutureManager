@@ -2,10 +2,15 @@
 FutureManager <- R6::R6Class(
   classname = "FutureManager",
   public = list(
+    initialize = function(session = shiny::getDefaultReactiveDomain()){
+      private$session <- session
+      invisible(self)
+    },
+    
     showProgress = function(taskId, label, statusVar, millis = 500, session = getDefaultReactiveDomain()) {
       pb <- MinimalProgress$new(paste0(taskId, "_progress"), session)
       
-      observe({
+      shiny::observe({
         statusVar()
         
         task <- private$getTask(taskId)
@@ -14,15 +19,11 @@ FutureManager <- R6::R6Class(
           return()
         }
         
-        invalidateLater(millis, session)
+        shiny::invalidateLater(millis, session)
         if (private$outputChanged(task)){
           x <- tryCatch(
-            expr = {
-              jsonlite::read_json(task$outFile)
-            },
-            error = function(e){
-              NULL # premature EOF may happen when cancelling
-            } 
+            expr = jsonlite::read_json(task$outFile),
+            error = function(e) NULL # premature EOF may happen when cancelling
           )
           
           if (length(x) > 0){
@@ -170,7 +171,7 @@ FutureManager <- R6::R6Class(
         )
         
         if (immediate){
-          fmUpdateRunButton(inputId, "danger", self)
+          fmUpdateRunButton(inputId, "danger", self, private$session)
         }
       }
       
@@ -188,6 +189,7 @@ FutureManager <- R6::R6Class(
   private = list(
     tasks = list(),
     buttonState = list(),
+    session = NULL,
     
     addTask = function(task) {
       taskId <- task$id

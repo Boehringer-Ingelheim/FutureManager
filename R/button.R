@@ -1,13 +1,11 @@
 #' @export
-fmRunButton <- function(inputId, fm, cs, defaultValue = FALSE, allowOneClass = FALSE){
+fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
   buttonState <- fm$initButtonState(
     inputId = inputId,
     defaultValue = defaultValue
   )
   
-  operator <- if (allowOneClass) `&&` else `||`
-  
-  if (operator(length(cs$class1) == 0, length(cs$class2) == 0)){
+  if (blocked){
     style <- "warning"
     disabled <- TRUE
   } else {
@@ -15,7 +13,7 @@ fmRunButton <- function(inputId, fm, cs, defaultValue = FALSE, allowOneClass = F
     disabled <- buttonState$disabled
   }
   
-  tagList(
+  shiny::tagList(
     shinyBS::bsButton(
       inputId = inputId,
       label = NULL, # controlled in CSS
@@ -48,10 +46,7 @@ fmUpdateRunButton <- function(inputId, status, fm, session = getDefaultReactiveD
     style = style,
     disabled = isSuccess
   )
-
-  if (status == "danger"){
-    print(buttonState)
-  }
+  
   shinyBS::updateButton(
     session = session,
     inputId = inputId,
@@ -62,15 +57,14 @@ fmUpdateRunButton <- function(inputId, status, fm, session = getDefaultReactiveD
 }
 
 #' @export
-fmRegisterRunObserver <- function(inputId, label, statusVar, longFun, input, fm, Args,
-                                  opts = c("dbname", "dbhost", "dbport", "dbuser", "dbpass"), progress = TRUE){
+fmRegisterRunObserver <- function(inputId, label, statusVar, longFun, input, fm, Args, opts = c(), progress = TRUE){
   taskId <- paste0(inputId, "_task")
   
   if (progress){
     fm$showProgress(taskId, label, statusVar)
   }
   
-  observeEvent(
+  shiny::observeEvent(
     eventExpr = input[[inputId]],
     handlerExpr = {
       isTriggered <- input[[inputId]]
@@ -105,7 +99,7 @@ fmRegisterRunObserver <- function(inputId, label, statusVar, longFun, input, fm,
     }
   )
   
-  observeEvent(
+  shiny::observeEvent(
     eventExpr = Args(),
     handlerExpr = {
       fm$outdateRun(inputId, TRUE)
