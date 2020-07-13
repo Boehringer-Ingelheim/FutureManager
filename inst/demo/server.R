@@ -1,5 +1,8 @@
 shinyServer(function(input, output, session) {
-  fm <- FutureManager$new(session)
+  fm <- FutureManager$new(
+    input = input, 
+    session = session
+  )
   
   # Sidebar menu --------------------------------------------------------------
   output$sidebar <- renderUI({
@@ -45,20 +48,17 @@ shinyServer(function(input, output, session) {
   # Plot tab ------------------------------------------------------------------
   PlotObj <- reactiveVal()
   PlotArgs <- reactive({
-    print("Plot args")
     list(
       xVar = input$xVar,
       yVar = input$yVar
     )
   })
   
-  fmRegisterRunObserver(
+  fm$registerRunObserver(
     inputId = "plot_run",
     label = "Plot",
     statusVar = PlotObj,
     longFun = plotLongFun,
-    input = input,
-    fm = fm,
     Args = PlotArgs
   )
   
@@ -72,17 +72,14 @@ shinyServer(function(input, output, session) {
   # Table tab -----------------------------------------------------------------
   TableObj <- reactiveVal()
   TableArgs <- reactive({
-    print("Table args")
     list(nRows = input$nRows)
   })
   
-  fmRegisterRunObserver(
+  fm$registerRunObserver(
     inputId = "table_run",
     label = "Table",
     statusVar = TableObj,
     longFun = tableLongFun,
-    input = input,
-    fm = fm,
     Args = TableArgs
   )
   
@@ -100,8 +97,9 @@ plotLongFun <- function(task, xVar, yVar){
   yVar <- sym(yVar)
   
   for (i in seq_len(10)){
-    if (fmIsInterrupted(task)) return() # is canceled?
     p <- i/10
+    
+    if (fmIsInterrupted(task)) return() # is canceled?
     fmUpdateProgress(task, progress = p, msg = "rendering plot...")
     
     Sys.sleep(1)
@@ -118,8 +116,9 @@ plotLongFun <- function(task, xVar, yVar){
 
 tableLongFun <- function(task, nRows){
   for (i in seq_len(10)){
-    if (fmIsInterrupted(task)) return() # is canceled?
     p <- i/10
+    
+    if (fmIsInterrupted(task)) return() # is canceled?
     fmUpdateProgress(task, progress = p, msg = "preparing table...")
     
     Sys.sleep(1)

@@ -2,8 +2,11 @@
 FutureManager <- R6::R6Class(
   classname = "FutureManager",
   public = list(
-    initialize = function(session = shiny::getDefaultReactiveDomain()){
+    initialize = function(input, session = shiny::getDefaultReactiveDomain(), opts = c()){
+      private$opts <- opts
+      private$input <- input
       private$session <- session
+      
       invisible(self)
     },
     
@@ -57,7 +60,9 @@ FutureManager <- R6::R6Class(
       
       args[["task"]] <- task
       
+      opts <- union(private$opts, opts)
       fopts <- options()[opts]
+      
       result <- future::future({
         options(fopts)
         res <- tryCatch(
@@ -184,12 +189,69 @@ FutureManager <- R6::R6Class(
       }
       
       invisible(self)
+    },
+    
+    registerRunObserver = function(inputId, label, statusVar, longFun, Args, opts = c(), progress = TRUE, input = NULL){
+      taskId <- paste0(inputId, "_task")
+      
+      if (is.null(input)){
+        input <- private$input
+      }
+      
+      if (progress){
+        self$showProgress(taskId, label, statusVar)
+      }
+      
+      shiny::observeEvent(
+        eventExpr = input[[inputId]],
+        handlerExpr = {
+          isTriggered <- input[[inputId]]
+          
+          buttonState <- self$getButtonState(inputId)
+          
+          if (buttonState$value != isTriggered){
+            self$updateButtonState(
+              inputId = inputId,
+              value = isTriggered # save the button state to avoid cache issue
+            )
+            
+            if (isTriggered){
+              if (is.function(longFun)){
+                args <- Args()
+                
+                self$run(
+                  taskId = taskId, 
+                  fun = longFun, 
+                  args = args,
+                  statusVar = statusVar,
+                  opts = opts,
+                  finally = function(status){
+                    fmUpdateRunButton(inputId, status, self)
+                  }
+                )
+              }
+            } else {
+              self$cancel(taskId)
+            }
+          }
+        }
+      )
+      
+      shiny::observeEvent(
+        eventExpr = Args(),
+        handlerExpr = {
+          self$outdateRun(inputId, TRUE)
+        }
+      )
     }
   ),
+  
   private = list(
     tasks = list(),
     buttonState = list(),
+    input = NULL,
     session = NULL,
+    opts = c(),
     
     addTask = function(task) {
       taskId <- task$id
