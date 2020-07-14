@@ -9,21 +9,21 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
-  R (>= 3.6.0),
-  shinyBS
+      R (>= 3.6.0),
+      shinyBS
 Imports:
-  R6,
-  future,
-  promises,
-  shiny,
-  jsonlite,
-  tools,
-  htmltools
+      R6,
+      future,
+      promises,
+      shiny,
+      jsonlite,
+      tools,
+      htmltools,
+      dplyr
 RoxygenNote: 7.1.0
 Suggests:
-  testthat,
-  dplyr,
-  ggplot2,
-  knitr,
-  rmarkdown
+    testthat (>= 2.1.0),
+    ggplot2,
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr
