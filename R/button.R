@@ -1,3 +1,13 @@
+#' Run button
+#' 
+#' Creates toggle button, that may be used to control a long background process (start, cancel etc)
+#' 
+#' @param inputId character string, the button ID
+#' @param fm FutureManager object
+#' @param defaultValue logical, the initial button value
+#' @param blocked logical, should the button be blocked?
+#' 
+#' @return button HTML
 #' @export
 fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
   buttonState <- fm$initButtonState(
@@ -33,6 +43,16 @@ fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
   )
 }
 
+#' Update run button
+#' 
+#' Updates the run button (on frontend) and also its state (on backend)
+#' 
+#' @param inputId character string, the button ID
+#' @param status character string, the button status
+#' @param fm FutureManager object
+#' @param session shiny session object
+#' 
+#' @return nothing
 #' @export
 fmUpdateRunButton <- function(inputId, status, fm, session = getDefaultReactiveDomain()) {
   isSuccess <- status == "success"

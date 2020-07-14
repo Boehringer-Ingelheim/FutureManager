@@ -1,3 +1,3 @@
 # FutureManager
 
-A cool side project of CLIFF :)
+Run the demo app using `FutureManager::demo()`
