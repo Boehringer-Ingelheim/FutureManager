@@ -17,20 +17,20 @@ knitr::opts_chunk$set(
 ```
 # Introduction
 
-FutureManager is a package, that enables usage of background processes for long-running operations in shiny applications. You may ask, what is a purpose of introducing such thing when there are promises. Well, let's walk through the flaws of a promises usage in shiny:
+`FutureManager` is a package, that enables usage of background processes for long-running operations in shiny applications. You may ask, what is a purpose of introducing such thing when there are promises. Well, let's walk through the flaws of a promises usage in shiny:
 
 * promises interface uses background processes, but the application waits for the results (due to the shiny flush cycle) and is NOT responsive when the calculations are running
 * once started, the long-running process cannot be canceled - you have to wait until it finishes, even if you have started the process by accident
 * you have no idea what is the progress of the task - background process doesn't send any updates to the app process
 * in most cases you have to use %...>% operator, which is not supported by many functions
 
-FutureManager resolves all these issues. The main advantage is an ability to run the long-running process and keep the app responsiveness at the same time. You can even run multiple processes at once and they will be running in parallel. Also, you can show the process progress and cancel the process. The results are stored in a standard reactive variable, that doesn't require the whole post-processing pipeline to be aware that input is a promise.
+`FutureManager` resolves all these issues. The main advantage is an ability to run the long-running process and keep the app responsiveness at the same time. You can even run multiple processes at once and they will be running in parallel. Also, you can show the process progress and cancel the process. The results are stored in a standard reactive variable, that doesn't require the whole post-processing pipeline to be aware that input is a promise.
 
 Sounds good? So let's see how to implement such functionality in your code!
 
 # Standard approach
 
-Let's suppose that you have a long running function, that produces a simple ggplot object. It accepts xVar and yVar arguments, which control which data are displayed. 
+Let's suppose that you have a long running function, that produces a simple ggplot object. It accepts `xVar` and `yVar` arguments, which control which data are displayed. 
 
 ```{r basicFun}
 library(ggplot2)
@@ -45,7 +45,7 @@ longFun <- function(xVar, yVar){
 }
 ```
 
-You also have a simple application, that uses this function to generate a plot. User can select xVar and yVar.
+You also have a simple application, that uses this function to generate a plot. User can select `xVar` and `yVar`.
 
 ```{r basic}
 library(shiny)
@@ -88,7 +88,7 @@ Did you notice the table with user-defined number of rows? When you click the ru
 
 # Let's integrate FutureManager
 
-First thing you should do preparing a background processes strategy. If your app is in a single file, you can add this on top, but if the app resides in ui.R and server.R, the best place for this is in global.R (will be executed only once, when the app is restarted).
+First thing you should do is preparing a background processes strategy. If your app is in a single file, you can add this on top, but if the app resides in ui.R and server.R, the best place for this is in global.R (will be executed only once, when the app is restarted).
 
 ```{r step1}
 library(FutureManager)
@@ -139,7 +139,7 @@ server <- function(input, output, session){
 
 As you probably noticed, there's a `fmRunButton()` function used instead the previous `actionButton()`. Why? This is because the button in `FutureManager` has some advanced behavior - the single button allows running and cancelling processes. Also, it might signalize that process has to be re-run (more on this later).
 
-Let's focus on our plot. To run the process we need 3 things: a long running function, it's arguments and also a reactive variable for the results.
+Let's focus on our plot. To run the process we need 3 things: a long running function, its arguments and also a reactive variable for the results.
 
 The function should accept at least 1 argument, called `task` - our function should look like this:
 
@@ -314,7 +314,7 @@ longFun <- function(task, xVar, yVar){
     fmUpdateProgress(task, i/10, "busy...")
     
     if (i == 7){
-      return(fmError("oops, the task  error"))
+      return(fmError("oops, not enough data"))
     }
   }
   
