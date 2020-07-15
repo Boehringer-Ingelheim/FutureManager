@@ -1,0 +1,335 @@
+---
+title: "FutureManager basic usage"
+output: rmarkdown::html_vignette
+author: "Michal Jakubczak"
+vignette: >
+  %\VignetteIndexEntry{Basic usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = FALSE
+)
+```
+# Introduction
+
+FutureManager is a package, that enables usage of background processes for long-running operations in shiny applications. You may ask, what is a purpose of introducing such thing when there are promises. Well, let's walk through the flaws of a promises usage in shiny:
+
+* promises interface uses background processes, but the application waits for the results (due to the shiny flush cycle) and is NOT responsive when the calculations are running
+* once started, the long-running process cannot be canceled - you have to wait until it finishes, even if you have started the process by accident
+* you have no idea what is the progress of the task - background process doesn't send any updates to the app process
+* in most cases you have to use %...>% operator, which is not supported by many functions
+
+FutureManager resolves all these issues. The main advantage is an ability to run the long-running process and keep the app responsiveness at the same time. You can even run multiple processes at once and they will be running in parallel. Also, you can show the process progress and cancel the process. The results are stored in a standard reactive variable, that doesn't require the whole post-processing pipeline to be aware that input is a promise.
+
+Sounds good? So let's see how to implement such functionality in your code!
+
+# Standard approach
+
+Let's suppose that you have a long running function, that produces a simple ggplot object. It accepts xVar and yVar arguments, which control which data are displayed. 
+
+```{r basicFun}
+library(ggplot2)
+
+longFun <- function(xVar, yVar){
+  xVar <- sym(xVar)
+  yVar <- sym(yVar)
+  
+  Sys.sleep(10) # this takes so long...
+  
+  ggplot(iris, aes(!!xVar, !!yVar)) + geom_point()
+}
+```
+
+You also have a simple application, that uses this function to generate a plot. User can select xVar and yVar.
+
+```{r basic}
+library(shiny)
+
+choices <- names(iris)[-5]
+ui <- fluidPage(
+  titlePanel("FutureManager example"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("xVar", "X var", choices, choices[1]),
+      selectInput("yVar", "Y var", choices, choices[2]),
+      actionButton("run", "Run"),
+      hr(),
+      sliderInput("nRows", "Rows", 1, 20, 6)
+    ),
+    
+    mainPanel(
+      plotOutput("plot"),
+      tableOutput("table")
+    )
+  )
+)
+
+server <- function(input, output, session){
+  output$plot <- renderPlot({
+    validate(need(input$run, "click run button"))
+    longFun(isolate(input$xVar), isolate(input$yVar))
+  })
+  
+  output$table <- renderTable({
+    head(iris, input$nRows)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+Did you notice the table with user-defined number of rows? When you click the run button you can change the slider value, but it's ignored by the app until the plot is generated. This is because of the shiny flush cycle - all outputs must be generated and sent to the frontend before any input changes are detected. So basically the app is not responsive for 10 seconds. Pretty annoying, don't you think?
+
+# Let's integrate FutureManager
+
+First thing you should do preparing a background processes strategy. If your app is in a single file, you can add this on top, but if the app resides in ui.R and server.R, the best place for this is in global.R (will be executed only once, when the app is restarted).
+
+```{r step1}
+library(FutureManager)
+plan(multiprocess) # don't forget this line!
+```
+
+Then, you should add an `fm` object into your server.R like this:
+
+```{r step2}
+server <- function(input, output, session){
+  fm <- FutureManager$new(input, session)
+  ...
+}
+```
+
+Your ui requires a small modification - it's because `FutureManager` supports multiple processes and keeps their state. We will move the plot-related inputs into server:
+
+```{r step3}
+ui <- fluidPage(
+  titlePanel("FutureManager example"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      uiOutput("panel"),
+      hr(),
+      sliderInput("nRows", "Rows", 1, 20, 6)
+    ),
+    
+    mainPanel(
+      plotOutput("plot"),
+      tableOutput("table")
+    )
+  )
+)
+
+server <- function(input, output, session){
+  fm <- FutureManager$new(input, session)
+  output$panel <- renderUI({
+    tagList(
+      selectInput("xVar", "X var", choices, choices[1]),
+      selectInput("yVar", "Y var", choices, choices[2]),
+      fmRunButton("run", fm)
+    )
+  })
+  ...
+}
+```
+
+As you probably noticed, there's a `fmRunButton()` function used instead the previous `actionButton()`. Why? This is because the button in `FutureManager` has some advanced behavior - the single button allows running and cancelling processes. Also, it might signalize that process has to be re-run (more on this later).
+
+Let's focus on our plot. To run the process we need 3 things: a long running function, it's arguments and also a reactive variable for the results.
+
+The function should accept at least 1 argument, called `task` - our function should look like this:
+
+```{r step4}
+longFun <- function(task, xVar, yVar){
+  ...
+}
+```
+
+Function arguments should be a reactive, that returns a named list.
+
+```{r step5}
+Args <- reactive({
+  list(
+    xVar = input$xVar,
+    yVar = input$yVar
+  )
+})
+```
+
+The results will be passed to a reactive variable:
+
+```{r step6}
+Plot <- reactiveVal()
+```
+
+We introduced the button, so now we should handle the click event. `fm` object has a method that will register observer for you that handles both run and cancel actions. It also takes care on updating the process state.
+
+```{r step7}
+fm$registerRunObserver(
+  inputId = "run", # should match the button ID
+  label = "Plot", # some short label that describes the task
+  statusVar = Plot,
+  longFun = longFun,
+  Args = Args
+)
+```
+
+So basically how this works? When you click on the run button, the background process starts to evaluate the `longFun`. When the process completes, the value is passed to the status reactive variable `Plot` and shiny handles the further invalidation (output updates etc). So the final step is to use the value in the app:
+
+```{r step8}
+output$plot <- renderPlot({
+    p <- Plot()
+    fmValidate(p) # this line is optional, but you don't want to remove it
+    fmGetValue(p)
+  })
+```
+
+Few comments: normally you would expect `p` to be a ggplot object, but `FutureManager` returns an `fmStatus` object instead. But don't be scared! The object contains some useful information, like the process status. In an ideal world all processes would return a `"success"` status, but in the real one there may be other ones like `"error"`, `"canceled"` etc. To get the ggplot object we have to use `fmGetValue()` function - and that's all! 
+
+An optional feature, but really nice one, is provided by the `fmValidate()` function. It displays user-friendly messages in the app, like informing that the process is in progress or hasn't been started yet. 
+
+Be aware that if the `Args()` reactive invalidates, it will also invalidate the run button. You will see the "re-run required" communicate.
+
+# Fully working example
+
+Here's the working app with all required changes. Enjoy! Note that the table is responsive to the slider during the plot generation.
+
+```{r fm, eval=FALSE}
+library(shiny)
+library(ggplot2)
+library(FutureManager)
+plan(multiprocess) # don't forget this line!
+
+longFun <- function(task, xVar, yVar){
+  xVar <- sym(xVar)
+  yVar <- sym(yVar)
+  
+  Sys.sleep(10)
+  
+  ggplot(iris, aes(!!xVar, !!yVar)) + geom_point()
+}
+
+choices <- names(iris)[-5]
+ui <- fluidPage(
+  titlePanel("FutureManager example"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      uiOutput("panel"),
+      hr(),
+      sliderInput("nRows", "Rows", 1, 20, 6)
+    ),
+    
+    mainPanel(
+      plotOutput("plot"),
+      tableOutput("table")
+    )
+  )
+)
+
+server <- function(input, output, session){
+  fm <- FutureManager$new(input, session)
+  output$panel <- renderUI({
+    tagList(
+      selectInput("xVar", "X var", choices, choices[1]),
+      selectInput("yVar", "Y var", choices, choices[2]),
+      fmRunButton("run", fm)
+    )
+  })
+  
+  Plot <- reactiveVal()
+  Args <- reactive({
+    list(
+      xVar = input$xVar,
+      yVar = input$yVar
+    )
+  })
+  
+  fm$registerRunObserver(
+    inputId = "run", 
+    label = "Plot", 
+    statusVar = Plot, 
+    longFun = longFun, 
+    Args = Args
+  )
+  
+  output$plot <- renderPlot({
+    p <- Plot()
+    fmValidate(p)
+    fmGetValue(p)
+  })
+  
+  output$table <- renderTable({
+    head(iris, input$nRows)
+  })
+}
+
+shinyApp(ui, server)
+
+
+```
+
+# Additional features
+
+"Hey, you promised us a progress bar! The cancel is also not working as expected!"
+
+Well, you're right. These features require some modifications of the long running function. We can finally use `task` argument.
+
+Shiny progress bar require explicit updates (see `withProgress()` function). We will do something similar in our function:
+
+```{r progress, eval=FALSE}
+longFun <- function(task, xVar, yVar){
+  xVar <- sym(xVar)
+  yVar <- sym(yVar)
+  
+  for (i in 1:10){
+    Sys.sleep(1)
+    if (fmIsInterrupted(task)) return()
+    fmUpdateProgress(task, i/10, "busy...")
+  }
+  
+  ggplot(iris, aes(!!xVar, !!yVar)) + geom_point()
+}
+``` 
+
+Here the `Sys.sleep(10)` has been replaced with a for loop that calls `Sys.sleep(1)` 10 times. In every second we want to update the progress, so we can use 
+`fmUpdateProgress()` function to do this. It will notify the app process that progress has changed and the bar will be updated.
+
+Also, `fmIsInterrupted()` function is called in each iteration. It checks if the process has been canceled by the user. Now we really have everything in place.
+
+You may also want to return an error from the long running function in case of missing data or any other reason. You can do this using `fmError()` function with a proper message - this message will be displayed in the frontend.
+
+```{r expectedErr, eval=FALSE}
+longFun <- function(task, xVar, yVar){
+  xVar <- sym(xVar)
+  yVar <- sym(yVar)
+  
+  for (i in 1:10){
+    Sys.sleep(1)
+    if (fmIsInterrupted(task)) return()
+    fmUpdateProgress(task, i/10, "busy...")
+    
+    if (i == 7){
+      return(fmError("oops, the task  error"))
+    }
+  }
+  
+  ggplot(iris, aes(!!xVar, !!yVar)) + geom_point()
+}
+```
+
+And that's it! For more advanced example please use `FutureManager::demo()`
+
+# Final note
+
+For optimal performance please use `multiprocess` strategy in `plan()` and launch the app using Rscript. You may experience a long app startup time and some lag when running background processes using RStudio, because it uses `multisession` strategy.
+
+You can run the demo app using Rscript like this:
+
+```
+Rscript -e 'FutureManager::demo()'
+```
