@@ -11,6 +11,7 @@
 \alias{multiprocess}
 \alias{cluster}
 \alias{remote}
+\alias{supportsMulticore}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -18,6 +19,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{future}{\code{\link[future]{cluster}}, \code{\link[future]{multicore}}, \code{\link[future]{multiprocess}}, \code{\link[future]{multisession}}, \code{\link[future]{plan}}, \code{\link[future]{remote}}, \code{\link[future]{sequential}}, \code{\link[future]{transparent}}}
+  \item{future}{\code{\link[future]{cluster}}, \code{\link[future]{multicore}}, \code{\link[future]{multiprocess}}, \code{\link[future]{multisession}}, \code{\link[future]{plan}}, \code{\link[future]{remote}}, \code{\link[future]{sequential}}, \code{\link[future]{supportsMulticore}}, \code{\link[future]{transparent}}}
 }}
 

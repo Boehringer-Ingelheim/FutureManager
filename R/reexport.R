@@ -29,3 +29,7 @@ future::cluster
 #' @importFrom future remote
 #' @export
 future::remote
+
+#' @importFrom future supportsMulticore
+#' @export
+future::supportsMulticore
