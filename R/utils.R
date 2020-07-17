@@ -28,7 +28,7 @@ fmStatus <- function(id, status, message, value = NULL) {
       status = status,
       message = message,
       value = value,
-      timestamp = `if`(!is.null(value), Sys.time())
+      timestamp = Sys.time()
     ),
     class = "fmStatus"
   )
@@ -173,7 +173,7 @@ fmValidate <- function(x, ...){
 #' @export
 fmNeed <- function(x, msgInit = "run the process first", msgRun = "wait for the process"){
   value <- fmGetValue(x) # will throw an error in case of error status
-  msg <- if (is.null(x)) msgInit else msgRun
+  msg <- if (is.null(x) || x$status == "canceled") msgInit else msgRun
   list(
     shiny::need(value, msg), 
     shiny::need(!is.fmError(value), value)

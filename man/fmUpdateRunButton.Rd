@@ -9,7 +9,7 @@ fmUpdateRunButton(inputId, status, fm, session = getDefaultReactiveDomain())
 \arguments{
 \item{inputId}{character string, the button ID}
 
-\item{status}{character string, the button status}
+\item{status}{character string, the process status}
 
 \item{fm}{FutureManager object}
 

@@ -108,21 +108,29 @@ FutureManager <- R6::R6Class(
       result <- promises::then(
         promise = result, 
         onFulfilled = function(value) {
-          if (is.fmError(value)){
-            statusVar(fmStatus(
+          status <- if (fmIsInterrupted(task)){
+            fmStatus(
+              id = task$id,
+              status = "canceled",
+              message = "Canceled by the user"
+            )
+          } else if (is.fmError(value)){
+            fmStatus(
               id = task$id,
               status = "failed",
               message = "Task failed",
               value = value
-            ))
+            )
           } else {
-            statusVar(fmStatus(
+           fmStatus(
               id = task$id,
               status = "success",
               message = "Task completed",
               value = value
-            ))
+            )
           }
+          
+          statusVar(status)
         },
         onRejected = function(e) {
           statusVar(fmStatus(
@@ -136,18 +144,10 @@ FutureManager <- R6::R6Class(
         promise = result,
         onFinally = function() {
           if (file.exists(task$outFile)) file.remove(task$outFile)
-          if (fmIsInterrupted(task)){
-            statusVar(fmStatus(
-              id = task$id,
-              status = "canceled",
-              message = "Canceled by the user"
-            ))
-            
-            file.remove(task$cancelFile)
-          }
-          private$removeTask(task$id)
+          if (fmIsInterrupted(task)) file.remove(task$cancelFile)
           status <- statusVar()$status
           if (is.function(finally)) finally(status) # user defined action
+          private$removeTask(task$id)
         }
       )
       
@@ -180,8 +180,8 @@ FutureManager <- R6::R6Class(
       if (is.null(private$buttonState[[inputId]])){
         private$buttonState[[inputId]] <- list(
           value = defaultValue,
-          style = "default",
-          disabled = FALSE
+          status = "init",
+          mustRerun = FALSE
         )
       }
       
@@ -200,20 +200,21 @@ FutureManager <- R6::R6Class(
     #' Update button state
     #' @param inputId character string, the button ID
     #' @param value logical, the button value
-    #' @param style character string, see bsButton for details
-    #' @param disabled logical, should disable the button?
+    #' @param status character string, see bsButton for details
     #' @return current button state
-    updateButtonState = function(inputId, value, style, disabled){
-      if (!missing(value)){
+    updateButtonState = function(inputId, value, status){
+      if (!missing(value) && !is.null(value)){
         private$buttonState[[inputId]]$value <- value
       }
       
-      if (!missing(style)){
-        private$buttonState[[inputId]]$style <- style
-      }
-      
-      if (!missing(disabled)){
-        private$buttonState[[inputId]]$disabled <- disabled
+      if (!missing(status) && !is.null(status)){
+        private$buttonState[[inputId]]$status <- status
+        
+        if (status == "success"){
+          private$buttonState[[inputId]]$mustRerun <- FALSE
+        } else if (status == "rerun"){
+          private$buttonState[[inputId]]$mustRerun <- TRUE
+        }
       }
       
       private$buttonState[[inputId]]
@@ -226,16 +227,15 @@ FutureManager <- R6::R6Class(
     #' @return self
     outdateRun = function(inputId, immediate = FALSE){
       buttonState <- self$getButtonState(inputId)
-      
-      if (!is.null(buttonState) && buttonState$style == "success"){
+
+      if (!is.null(buttonState) && buttonState$status %in% c("success", "running")){
         self$updateButtonState(
           inputId = inputId,
-          style = "danger",
-          disabled = FALSE
+          status = "rerun"
         )
         
-        if (immediate){
-          fmUpdateRunButton(inputId, "danger", self, private$session)
+        if (immediate && buttonState$status == "success"){
+          fmUpdateRunButton(inputId, "rerun", self, private$session)
         }
       }
       
@@ -288,29 +288,30 @@ FutureManager <- R6::R6Class(
           buttonState <- self$getButtonState(inputId)
           
           if (buttonState$value != isTriggered){
-            self$updateButtonState(
-              inputId = inputId,
-              value = isTriggered # save the button state to avoid cache issue
-            )
-            
             if (isTriggered){
-              if (is.function(longFun)){
-                args <- Args()
-                
-                self$run(
-                  taskId = taskId, 
-                  fun = longFun, 
-                  args = args,
-                  statusVar = statusVar,
-                  opts = opts,
-                  finally = function(status){
-                    fmUpdateRunButton(inputId, status, self)
-                  }
-                )
-              }
+              args <- Args()
+              
+              self$run(
+                taskId = taskId, 
+                fun = longFun, 
+                args = args,
+                statusVar = statusVar,
+                opts = opts,
+                finally = function(status){
+                  fmUpdateRunButton(inputId, status, self, private$session)
+                }
+              )
+              status <- "running"
             } else {
               self$cancel(taskId)
+              status <- NULL # will be updated in finally function
             }
+            
+            self$updateButtonState(
+              inputId = inputId,
+              value = isTriggered, # save the button state to avoid cache issue
+              status = status
+            )
           }
         }
       )

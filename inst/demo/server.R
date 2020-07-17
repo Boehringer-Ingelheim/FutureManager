@@ -18,13 +18,13 @@ shinyServer(function(input, output, session) {
           inputId = "xVar",
           label = "X var",
           choices = choices,
-          selected = input$xVar %||% choices[1]
+          selected = isolate(input$xVar) %||% choices[1]
         ),
         selectInput(
           inputId = "yVar",
           label = "Y var",
           choices = choices,
-          selected = input$yVar %||% choices[2]
+          selected = isolate(input$yVar) %||% choices[2]
         )
       )
     } else {
@@ -39,7 +39,7 @@ shinyServer(function(input, output, session) {
           label = "Number of rows",
           min = 1,
           max = 150,
-          value = input$nRows %||% 6
+          value = isolate(input$nRows) %||% 6
         )
       )
     }

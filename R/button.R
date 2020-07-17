@@ -19,8 +19,8 @@ fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
     style <- "warning"
     disabled <- TRUE
   } else {
-    style <- buttonState$style
-    disabled <- buttonState$disabled
+    style <- getStyleForStatus(buttonState$status)
+    disabled <- style == "success"
   }
   
   shiny::tagList(
@@ -48,7 +48,7 @@ fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
 #' Updates the run button (on frontend) and also its state (on backend)
 #' 
 #' @param inputId character string, the button ID
-#' @param status character string, the button status
+#' @param status character string, the process status
 #' @param fm FutureManager object
 #' @param session shiny session object
 #' 
@@ -58,21 +58,32 @@ fmUpdateRunButton <- function(inputId, status, fm, session = getDefaultReactiveD
   isSuccess <- status == "success"
   
   currentState <- fm$getButtonState(inputId)
-  style <- if (isSuccess) "success" else currentState$style
+  if (!isSuccess && currentState$mustRerun){
+    status <- "rerun"
+    isSuccess <- FALSE
+  }
   
   buttonState <- fm$updateButtonState(
     inputId = inputId,
     value = FALSE,
-    style = style,
-    disabled = isSuccess
+    status = status
   )
   
   shinyBS::updateButton(
     session = session,
     inputId = inputId,
-    value = buttonState$value,
-    style = buttonState$style,
-    disabled = buttonState$disabled
+    value = FALSE,
+    style = getStyleForStatus(status),
+    disabled = isSuccess
   )
 }
 
+getStyleForStatus <- function(status){
+  switch(
+    EXPR = status,
+    success = "success",
+    rerun = "danger",
+    blocked = "warning",
+    "default"
+  )
+}

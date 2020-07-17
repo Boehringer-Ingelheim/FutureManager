@@ -205,7 +205,7 @@ current button state
 \subsection{Method \code{updateButtonState()}}{
 Update button state
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{FutureManager$updateButtonState(inputId, value, style, disabled)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{FutureManager$updateButtonState(inputId, value, status)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -215,9 +215,7 @@ Update button state
 
 \item{\code{value}}{logical, the button value}
 
-\item{\code{style}}{character string, see bsButton for details}
-
-\item{\code{disabled}}{logical, should disable the button?}
+\item{\code{status}}{character string, see bsButton for details}
 }
 \if{html}{\out{</div>}}
 }
