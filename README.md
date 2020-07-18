@@ -1,9 +1,9 @@
 # FutureManager
 
-Does your shiny application run some time consuming calculations? Do you wish you could do some other things in the app when waiting for the results? Are you tired of forcing your functions to use `%...>%` operator? Here's the FutureManager!
+Does your shiny application run some time consuming calculations? Would you like your app to do some other things while waiting for the results? Are you tired of forcing your functions to use `%...>%` operator? Here's the FutureManager!
 
 * Launch multiple long-running processes in the background and keep the app responsive
-* You clicked the run button by accident? No worries, just cancel the calculations!
+* Even after clicking the run button by accident, you can cancel the calculations.
 * Progress bar per each process? Yes, please!
 
 Sounds good? 
