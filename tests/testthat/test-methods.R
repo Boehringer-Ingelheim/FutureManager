@@ -1,6 +1,5 @@
 library(FutureManager)
 library(testthat)
-library(dplyr)
 
 test_that(
   desc = "fmStatus methods work correctly",
@@ -35,6 +34,10 @@ test_that(
     expect_equal(
       object = status %>% tbl_vars() %>% as.character(),
       expected =  c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species")
+    )
+    expect_equal(
+      object = status %>% group_vars(),
+      expected = character(0)
     )
     expect_equal(
       object = status[c("Sepal.Length", "Petal.Width")] %>% names(),

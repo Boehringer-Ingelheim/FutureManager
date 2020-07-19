@@ -4,7 +4,7 @@
 \alias{demo}
 \title{FutureManager demo app}
 \usage{
-demo(host = "0.0.0.0", port = 3838L, launch.browser = TRUE)
+demo(host = "0.0.0.0", port = 3838L, launch.browser = FALSE)
 }
 \arguments{
 \item{host}{host IP}

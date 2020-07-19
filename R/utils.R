@@ -41,7 +41,7 @@ fmStatus <- function(id, status, message, value = NULL) {
 #' @return logical
 #' @export
 is.fmStatus <- function(x) {
-  is(x, "fmStatus")
+  methods::is(x, "fmStatus")
 }
 
 # fmError ---------------------------------------------------------------------

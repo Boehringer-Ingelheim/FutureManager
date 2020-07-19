@@ -25,7 +25,12 @@ rename.fmStatus <- function(.data, ...) {
 
 #' @export
 tbl_vars.fmStatus <- function(x) {
-  dplyr::tbl_vars(x$value)
+  dplyr::tbl_vars(fmGetValue(x))
+}
+
+#' @export
+group_vars.fmStatus <- function(x) {
+  dplyr::group_vars(fmGetValue(x))
 }
 
 #' @export
@@ -34,7 +39,7 @@ tbl_vars.fmStatus <- function(x) {
 }
 
 #' @export
-print.fmStatus <- function(x) {
+print.fmStatus <- function(x, ...) {
   cat(sprintf("%s [%s]\n", x$id, x$status))
   cat("msg:", x$message, "\n")
   valueString <- if (is.null(x$value)){

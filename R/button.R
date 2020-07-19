@@ -36,7 +36,7 @@ fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
     htmltools::htmlDependency(
       name = "FutureManager",
       package = "FutureManager",
-      version = packageVersion("FutureManager"),
+      version = utils::packageVersion("FutureManager"),
       src = "FutureManager",
       stylesheet = "FutureManager.css"
     )
@@ -54,7 +54,7 @@ fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
 #' 
 #' @return nothing
 #' @export
-fmUpdateRunButton <- function(inputId, status, fm, session = getDefaultReactiveDomain()) {
+fmUpdateRunButton <- function(inputId, status, fm, session = shiny::getDefaultReactiveDomain()) {
   isSuccess <- status == "success"
   
   currentState <- fm$getButtonState(inputId)

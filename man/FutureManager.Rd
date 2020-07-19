@@ -71,7 +71,7 @@ Show progress bar for a specific task
   label,
   statusVar,
   millis = 500,
-  session = getDefaultReactiveDomain()
+  session = shiny::getDefaultReactiveDomain()
 )}\if{html}{\out{</div>}}
 }
 

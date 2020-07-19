@@ -21,7 +21,7 @@ test_that(
   code = {
     # run the app
     app <- shinytest::ShinyDriver$new(
-      path = system.file("demo", package = "FutureManager"),
+      path = system.file("demoapp", package = "FutureManager"),
       loadTimeout = 10000 # 10s to spin up processes in Rstudio
     )
     app$waitForValue( # wait for the UI render

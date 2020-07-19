@@ -12,6 +12,14 @@
 \alias{cluster}
 \alias{remote}
 \alias{supportsMulticore}
+\alias{\%>\%}
+\alias{arrange}
+\alias{mutate}
+\alias{filter}
+\alias{select}
+\alias{rename}
+\alias{tbl_vars}
+\alias{group_vars}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -19,6 +27,10 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
+  \item{dplyr}{\code{\link[dplyr]{arrange}}, \code{\link[dplyr]{filter}}, \code{\link[dplyr]{group_vars}}, \code{\link[dplyr]{mutate}}, \code{\link[dplyr]{rename}}, \code{\link[dplyr]{select}}, \code{\link[dplyr]{tbl_vars}}}
+
   \item{future}{\code{\link[future]{cluster}}, \code{\link[future]{multicore}}, \code{\link[future]{multiprocess}}, \code{\link[future]{multisession}}, \code{\link[future]{plan}}, \code{\link[future]{remote}}, \code{\link[future]{sequential}}, \code{\link[future]{supportsMulticore}}, \code{\link[future]{transparent}}}
+
+  \item{magrittr}{\code{\link[magrittr]{\%>\%}}}
 }}
 

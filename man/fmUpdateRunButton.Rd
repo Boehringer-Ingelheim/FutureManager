@@ -4,7 +4,12 @@
 \alias{fmUpdateRunButton}
 \title{Update run button}
 \usage{
-fmUpdateRunButton(inputId, status, fm, session = getDefaultReactiveDomain())
+fmUpdateRunButton(
+  inputId,
+  status,
+  fm,
+  session = shiny::getDefaultReactiveDomain()
+)
 }
 \arguments{
 \item{inputId}{character string, the button ID}

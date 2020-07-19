@@ -28,7 +28,7 @@ FutureManager <- R6::R6Class(
     #' @param millis integer, refreshing interval (in ms)
     #' @param session shiny session object
     #' @return self
-    showProgress = function(taskId, label, statusVar, millis = 500, session = getDefaultReactiveDomain()) {
+    showProgress = function(taskId, label, statusVar, millis = 500, session = shiny::getDefaultReactiveDomain()) {
       pb <- MinimalProgress$new(paste0(taskId, "_progress"), session)
       
       shiny::observe({
