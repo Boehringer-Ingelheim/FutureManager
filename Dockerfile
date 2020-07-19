@@ -17,7 +17,7 @@ RUN R -e "devtools::install_deps(pkg='/install', dependencies=TRUE)"
 RUN export OPENSSL_CONF=/etc/ssl/ && R -e "devtools::check('/install')"
 
 RUN R CMD INSTALL /install
-# RUN rm -rf /install
+RUN rm -rf /install
 
 EXPOSE 3838
 

@@ -270,7 +270,7 @@ FutureManager <- R6::R6Class(
     #' @return self
     registerRunObserver = function(inputId, label, statusVar, longFun, Args, 
                                    opts = c(), progress = TRUE, input = NULL){
-      taskId <- paste0(inputId, "_task")
+      taskId <- paste(inputId, sample(1e6, 1), sep = "_")
       
       if (is.null(input)){
         input <- private$input
