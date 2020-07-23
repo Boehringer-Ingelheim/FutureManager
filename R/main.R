@@ -145,7 +145,7 @@ FutureManager <- R6::R6Class(
         onFinally = function() {
           if (file.exists(task$outFile)) file.remove(task$outFile)
           if (fmIsInterrupted(task)) file.remove(task$cancelFile)
-          status <- statusVar()$status
+          status <- statusVar()[["status"]]
           if (is.function(finally)) finally(status) # user defined action
           private$removeTask(task$id)
         }
@@ -271,7 +271,6 @@ FutureManager <- R6::R6Class(
     registerRunObserver = function(inputId, label, statusVar, longFun, Args, 
                                    opts = c(), progress = TRUE, input = NULL){
       taskId <- paste(inputId, sample(1e6, 1), sep = "_")
-      
       if (is.null(input)){
         input <- private$input
       }
@@ -290,7 +289,6 @@ FutureManager <- R6::R6Class(
           if (buttonState$value != isTriggered){
             if (isTriggered){
               args <- Args()
-              
               self$run(
                 taskId = taskId, 
                 fun = longFun, 

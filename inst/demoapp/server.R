@@ -7,7 +7,7 @@ shinyServer(function(input, output, session) {
   # Sidebar menu --------------------------------------------------------------
   output$sidebar <- renderUI({
     if (input$tabset == "plot"){
-      choices <- names(iris)[-5]
+      choices <- names(iris)
       tagList(
         fmRunButton(
           inputId = "plot_run",
@@ -93,6 +93,9 @@ shinyServer(function(input, output, session) {
 
 # Long funs -------------------------------------------------------------------
 plotLongFun <- function(task, xVar, yVar){
+  if (xVar == "Species") return(fmError("Species column not allowed as xVar"))
+  if (yVar == "Species") stop("Species column not allowed as yVar")
+  
   xVar <- sym(xVar)
   yVar <- sym(yVar)
   

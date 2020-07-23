@@ -124,14 +124,14 @@ fmUpdateProgress <- function(task, progress = 0, msg = NULL) {
 #' @export
 fmGetValue <- function(x) {
   if (!is.fmStatus(x)) return()
-  if (x$status == "error") {
+  if (x[["status"]] == "error") {
     warning("The background process returned an error!")
-    stop(x$message)
+    stop(x[["message"]])
   }
-  if (x$status == "failed") {
-    warning(x$value)
+  if (x[["status"]] == "failed") {
+    warning(x[["value"]])
   }
-  x$value
+  x[["value"]]
 }
 
 #' Validate the process value
@@ -173,7 +173,7 @@ fmValidate <- function(x, ...){
 #' @export
 fmNeed <- function(x, msgInit = "run the process first", msgRun = "wait for the process"){
   value <- fmGetValue(x) # will throw an error in case of error status
-  msg <- if (is.null(x) || x$status == "canceled") msgInit else msgRun
+  msg <- if (is.null(x) || x[["status"]] == "canceled") msgInit else msgRun
   list(
     shiny::need(value, msg), 
     shiny::need(!is.fmError(value), value)
