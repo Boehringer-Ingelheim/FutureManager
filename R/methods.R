@@ -40,7 +40,12 @@ group_vars.fmStatus <- function(x) {
 
 #' @export
 `$.fmStatus` <- function(x, name) {
-  fmGetValue(x)[[name]]
+  value <- fmGetValue(x)
+  if (is.fmError(value)){
+    value
+  } else {
+    value[[name]]
+  }
 }
 
 #' @export

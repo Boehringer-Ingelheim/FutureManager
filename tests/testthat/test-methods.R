@@ -57,3 +57,54 @@ test_that(
     )
   }
 )
+
+test_that(
+  desc = "fmStatus value method works correctly",
+  code = {
+    status <- fmStatus(
+      id = "dummy",
+      status = "success",
+      message = "Job completed",
+      value = list(
+        df = iris,
+        x = "something else"
+      )
+    )
+    expect_equal(
+      object = status$df,
+      expected = iris
+    )
+    expect_equal(
+      object = status$x,
+      expected = "something else"
+    )
+    expect_null(status$y)
+    
+
+    status2 <- fmStatus(
+      id = "dummy2",
+      status = "error",
+      message = "Something went wrong",
+      value = NULL
+    )
+    expect_error(
+      object = suppressWarnings(status2$df),
+      regexp = "Something went wrong"
+    )
+    
+    status3 <- fmStatus(
+      id = "dummy3",
+      status = "failed",
+      message = "task failed",
+      value = fmError("missing data")
+    )
+    expect_s3_class(
+      object = suppressWarnings(status3$df),
+      class = "fmError"
+    )
+    expect_warning(
+      object = status3$df,
+      regexp = "missing data"
+    )
+  }
+)
