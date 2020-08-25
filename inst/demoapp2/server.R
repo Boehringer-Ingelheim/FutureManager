@@ -17,14 +17,20 @@ shinyServer(function(input, output, session) {
     )
   })
   
-  taskId <- "plot"
-  fm$showProgress(taskId, "Plot", PlotObj)
+  taskId <- "plot" # some initial ID
   observeEvent(
     eventExpr = Args(),
     handlerExpr = {
       args <- Args()
       req(validateArgs(args))
+      
       fm$cancel(taskId)
+      
+      # generate new ID in case of changing args
+      # new process with the latest args will spin up
+      # the previous process with outdated args will be canceled
+      taskId <<- fmGenerateTaskId("plot") 
+      fm$showProgress(taskId, "Plot", PlotObj)
       fm$run(
         taskId = taskId,
         fun = plotLongFun,

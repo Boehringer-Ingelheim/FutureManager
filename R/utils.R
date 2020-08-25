@@ -179,3 +179,12 @@ fmNeed <- function(x, msgInit = "run the process first", msgRun = "wait for the 
     shiny::need(!is.fmError(value), value)
   )
 }
+
+#' Generate task ID
+#' 
+#' @param id character string, ID pattern
+#' @return character string
+#' @export
+fmGenerateTaskId <- function(id){
+  paste(id, sample(1e6, 1), sep = "_")
+}

@@ -30,13 +30,13 @@ FutureManager <- R6::R6Class(
     #' @return self
     showProgress = function(taskId, label, statusVar, millis = 500, session = shiny::getDefaultReactiveDomain()) {
       pb <- MinimalProgress$new(paste0(taskId, "_progress"), session)
+      private$pb[[taskId]] <- pb
       
-      shiny::observe({
+      private$observers[[taskId]] <- shiny::observe({
         statusVar()
         
         task <- private$getTask(taskId)
         if (is.null(task)){
-          pb$close()
           return()
         }
         
@@ -270,24 +270,23 @@ FutureManager <- R6::R6Class(
     #' @return self
     registerRunObserver = function(inputId, label, statusVar, longFun, Args, 
                                    opts = c(), progress = TRUE, input = NULL){
-      taskId <- paste(inputId, sample(1e6, 1), sep = "_")
-      if (is.null(input)){
-        input <- private$input
-      }
+      taskId <- fmGenerateTaskId(inputId)
       
-      if (progress){
-        self$showProgress(taskId, label, statusVar)
+      if (is.null(input)) {
+        input <- private$input
       }
       
       shiny::observeEvent(
         eventExpr = input[[inputId]],
         handlerExpr = {
           isTriggered <- input[[inputId]]
-          
           buttonState <- self$getButtonState(inputId)
-          
           if (buttonState$value != isTriggered){
             if (isTriggered){
+              if (progress){
+                self$showProgress(taskId, label, statusVar)
+              }
+              
               args <- Args()
               self$run(
                 taskId = taskId, 
@@ -325,6 +324,8 @@ FutureManager <- R6::R6Class(
   
   private = list(
     tasks = list(),
+    observers = list(),
+    pb = list(),
     buttonState = list(),
     input = NULL,
     session = NULL,
@@ -337,6 +338,19 @@ FutureManager <- R6::R6Class(
     
     removeTask = function(taskId) {
       private$tasks[[taskId]] <- NULL
+      
+      obs <- private$observers[[taskId]]
+      if (!is.null(obs)){
+        obs$destroy()
+        private$observers[[taskId]] <- NULL
+      }
+      
+      
+      pb <- private$pb[[taskId]]
+      if (!is.null(pb)){
+        pb$close()
+        private$pb[[taskId]] <- NULL
+      }
     },
     
     getTask = function(taskId) {
