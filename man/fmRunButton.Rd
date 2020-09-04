@@ -21,3 +21,6 @@ button HTML
 \description{
 Creates toggle button, that may be used to control a long background process (start, cancel etc)
 }
+\details{
+See \code{\link{fmError}} for some example.
+}

@@ -15,3 +15,7 @@ logical
 \description{
 Check if object is of fmStatus class
 }
+\examples{
+status <- fmStatus("task1", "success", "Task completed successfully", iris)
+is.fmStatus(status)
+}

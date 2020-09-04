@@ -19,5 +19,5 @@ process is still running}
 list of shiny needs
 }
 \description{
-Ensures the value is valid
+Ensures the value is valid.
 }

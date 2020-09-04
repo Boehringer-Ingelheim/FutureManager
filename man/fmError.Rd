@@ -16,3 +16,34 @@ fmError object
 Allows to signalize some error in the long function (not enough data to run 
 calculations etc)
 }
+\examples{
+if (interactive()) {
+  library(shiny)
+  plan(multiprocess)
+  
+  longFun <- function(task, n){
+    if (n < 0) return(fmError("n must be >= 0"))
+    log(n)
+  }
+  
+  shinyApp(
+    ui = basicPage(
+      uiOutput("button"), 
+      numericInput("n", "n", -3, -5, 5), 
+      textOutput("result")
+    ),
+    server = function(input, output, session){
+      fm <- FutureManager$new(input, session)
+      output$button <- renderUI(fmRunButton("run", fm))
+      Res <- reactiveVal()
+      Args <- reactive(list(n = input$n))
+      fm$registerRunObserver("run", NULL, Res, longFun, Args, progress = FALSE)
+      output$result <- renderText({
+        res <- Res()
+        fmValidate(res)
+        fmGetValue(res)
+      })
+    }
+  )
+}
+}

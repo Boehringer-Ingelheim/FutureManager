@@ -11,7 +11,7 @@ fmStatus(id, status, message, value = NULL)
 
 \item{status}{character string}
 
-\item{message}{message that may be used on front-end to inform user what's happening}
+\item{message}{message that may be used on front-end to inform user what's happeninged}
 
 \item{value}{NULL for not-"success" tasks, the long function value for "success" tasks}
 }
@@ -31,5 +31,8 @@ Possible statuses:
 - "error": unexpected error occured in the long function;
 - "canceled": task has been canceled by the user
 
-This function should NOT be used directly .
+This function should NOT be used directly.
+}
+\examples{
+fmStatus("task1", "success", "Task completed successfully", iris)
 }

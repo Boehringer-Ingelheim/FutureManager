@@ -15,3 +15,38 @@ logical
 \description{
 Basically, it checks if the process has been canceled by the user.
 }
+\examples{
+if (interactive()) {
+  library(shiny)
+  plan(multiprocess)
+  
+  longFun <- function(task, n){
+    for (i in seq_len(10)){
+      # check if the process has been canceled (every 1s)
+      if (fmIsInterrupted(task)) return()
+      Sys.sleep(1)
+    }
+    n
+  }
+  
+  shinyApp(
+    ui = basicPage(
+      uiOutput("button"), 
+      numericInput("n", "n", -3, -5, 5), 
+      textOutput("result")
+    ),
+    server = function(input, output, session){
+      fm <- FutureManager$new(input, session)
+      output$button <- renderUI(fmRunButton("run", fm))
+      Res <- reactiveVal()
+      Args <- reactive(list(n = input$n))
+      fm$registerRunObserver("run", NULL, Res, longFun, Args, progress = FALSE)
+      output$result <- renderText({
+        res <- Res()
+        fmValidate(res)
+        fmGetValue(res)
+      })
+    }
+  )
+}
+}

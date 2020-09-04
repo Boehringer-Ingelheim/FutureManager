@@ -15,10 +15,12 @@ the process value
 \description{
 This function should be used when there's a need to get a value returned by
 a background process. In particular, it signalizes any errors that may happen
-in the process. Direct access (i.e. x$value) doesn't show errors.
+in the process. Direct access (i.e. x[["value"]]) doesn't show errors.
 }
 \details{
 The value is NULL for every status, except:
 - "success": the value from the process
 - "failed": the error message (see fmValidate() for handling this)
+
+See \code{\link{fmError}} for some example.
 }

@@ -288,7 +288,7 @@ Register run observer
 \describe{
 \item{\code{inputId}}{character string, the button ID}
 
-\item{\code{label}}{character string, the progress bar label}
+\item{\code{label}}{character string, the progress bar label (used only if progress = TRUE)}
 
 \item{\code{statusVar}}{reactiveVal object that is linked with the process}
 

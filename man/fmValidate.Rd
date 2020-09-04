@@ -20,3 +20,6 @@ process value directly. It ensures that the value is valid and displays an
 error message in case of any issues. Also, it displays helpful messages regarding 
 the process start/wait with a CSS formatting.
 }
+\details{
+See \code{\link{fmError}} for some example.
+}

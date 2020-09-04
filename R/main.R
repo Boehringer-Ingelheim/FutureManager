@@ -257,7 +257,7 @@ FutureManager <- R6::R6Class(
     #' @description 
     #' Register run observer
     #' @param inputId character string, the button ID
-    #' @param label character string, the progress bar label
+    #' @param label character string, the progress bar label (used only if progress = TRUE)
     #' @param statusVar reactiveVal object that is linked with the process
     #' @param longFun long running function, see run() method for details
     #' @param Args reactive, that should return a named list of additional longFun 

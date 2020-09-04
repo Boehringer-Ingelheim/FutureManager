@@ -13,5 +13,41 @@ is.fmError(x)
 logical
 }
 \description{
-Check if object is of fmError class
+This is useful when using helper functions in the long running function.
+}
+\examples{
+if (interactive()) {
+  library(shiny)
+  plan(multiprocess)
+  
+  helper <- function(n){
+    if (n < 0) return(fmError("n must be >= 0"))
+    log(n)
+  }
+  longFun <- function(task, n){
+    x <- helper(n)
+    if (is.fmError(x)) return(x)
+    x^2
+  }
+  
+  shinyApp(
+    ui = basicPage(
+      uiOutput("button"), 
+      numericInput("n", "n", -3, -5, 5), 
+      textOutput("result")
+    ),
+    server = function(input, output, session){
+      fm <- FutureManager$new(input, session)
+      output$button <- renderUI(fmRunButton("run", fm))
+      Res <- reactiveVal()
+      Args <- reactive(list(n = input$n))
+      fm$registerRunObserver("run", NULL, Res, longFun, Args, progress = FALSE)
+      output$result <- renderText({
+        res <- Res()
+        fmValidate(res)
+        fmGetValue(res)
+      })
+    }
+  )
+}
 }

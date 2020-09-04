@@ -2,6 +2,8 @@
 #' 
 #' Creates toggle button, that may be used to control a long background process (start, cancel etc)
 #' 
+#' See \code{\link{fmError}} for some example.
+#' 
 #' @param inputId character string, the button ID
 #' @param fm FutureManager object
 #' @param defaultValue logical, the initial button value

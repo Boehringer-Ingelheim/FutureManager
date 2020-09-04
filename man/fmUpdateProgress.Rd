@@ -20,3 +20,38 @@ nothing
 This function allows to pass progress info from the background process
 to the main process, i.e. to display a progress in the application
 }
+\examples{
+if (interactive()) {
+  library(shiny)
+  plan(multiprocess)
+  
+  longFun <- function(task, n){
+    for (i in seq_len(10)){
+      if (fmIsInterrupted(task)) return()
+      fmUpdateProgress(task, progress = i/10, msg = "busy...")
+      Sys.sleep(1)
+    }
+    n
+  }
+  
+  shinyApp(
+    ui = basicPage(
+      uiOutput("button"), 
+      numericInput("n", "n", -3, -5, 5), 
+      textOutput("result")
+    ),
+    server = function(input, output, session){
+      fm <- FutureManager$new(input, session)
+      output$button <- renderUI(fmRunButton("run", fm))
+      Res <- reactiveVal()
+      Args <- reactive(list(n = input$n))
+      fm$registerRunObserver("run", "Progress", Res, longFun, Args)
+      output$result <- renderText({
+        res <- Res()
+        fmValidate(res)
+        fmGetValue(res)
+      })
+    }
+  )
+}
+}

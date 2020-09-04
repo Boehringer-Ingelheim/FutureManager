@@ -12,15 +12,17 @@
 #' - "error": unexpected error occured in the long function;
 #' - "canceled": task has been canceled by the user
 #' 
-#' This function should NOT be used directly .
+#' This function should NOT be used directly.
 #' 
 #' @param id character string, task ID
 #' @param status character string
-#' @param message message that may be used on front-end to inform user what's happening
+#' @param message message that may be used on front-end to inform user what's happeninged
 #' @param value NULL for not-"success" tasks, the long function value for "success" tasks
 #' 
 #' @return fmStatus object
 #' @export
+#' @examples
+#' fmStatus("task1", "success", "Task completed successfully", iris)
 fmStatus <- function(id, status, message, value = NULL) {
   structure(
     list(
@@ -40,6 +42,9 @@ fmStatus <- function(id, status, message, value = NULL) {
 #' 
 #' @return logical
 #' @export
+#' @examples 
+#' status <- fmStatus("task1", "success", "Task completed successfully", iris)
+#' is.fmStatus(status)
 is.fmStatus <- function(x) {
   methods::is(x, "fmStatus")
 }
@@ -54,6 +59,36 @@ is.fmStatus <- function(x) {
 #' 
 #' @return fmError object
 #' @export
+#' @examples 
+#' if (interactive()) {
+#'   library(shiny)
+#'   plan(multiprocess)
+#'   
+#'   longFun <- function(task, n){
+#'     if (n < 0) return(fmError("n must be >= 0"))
+#'     log(n)
+#'   }
+#'   
+#'   shinyApp(
+#'     ui = basicPage(
+#'       uiOutput("button"), 
+#'       numericInput("n", "n", -3, -5, 5), 
+#'       textOutput("result")
+#'     ),
+#'     server = function(input, output, session){
+#'       fm <- FutureManager$new(input, session)
+#'       output$button <- renderUI(fmRunButton("run", fm))
+#'       Res <- reactiveVal()
+#'       Args <- reactive(list(n = input$n))
+#'       fm$registerRunObserver("run", NULL, Res, longFun, Args, progress = FALSE)
+#'       output$result <- renderText({
+#'         res <- Res()
+#'         fmValidate(res)
+#'         fmGetValue(res)
+#'       })
+#'     }
+#'   )
+#' }
 fmError <- function(msg){
   structure(
     msg,
@@ -63,10 +98,47 @@ fmError <- function(msg){
 
 #' Check if object is of fmError class
 #' 
+#' This is useful when using helper functions in the long running function.
+#' 
 #' @param x object to test
 #' 
 #' @return logical
 #' @export
+#' @examples 
+#' if (interactive()) {
+#'   library(shiny)
+#'   plan(multiprocess)
+#'   
+#'   helper <- function(n){
+#'     if (n < 0) return(fmError("n must be >= 0"))
+#'     log(n)
+#'   }
+#'   longFun <- function(task, n){
+#'     x <- helper(n)
+#'     if (is.fmError(x)) return(x)
+#'     x^2
+#'   }
+#'   
+#'   shinyApp(
+#'     ui = basicPage(
+#'       uiOutput("button"), 
+#'       numericInput("n", "n", -3, -5, 5), 
+#'       textOutput("result")
+#'     ),
+#'     server = function(input, output, session){
+#'       fm <- FutureManager$new(input, session)
+#'       output$button <- renderUI(fmRunButton("run", fm))
+#'       Res <- reactiveVal()
+#'       Args <- reactive(list(n = input$n))
+#'       fm$registerRunObserver("run", NULL, Res, longFun, Args, progress = FALSE)
+#'       output$result <- renderText({
+#'         res <- Res()
+#'         fmValidate(res)
+#'         fmGetValue(res)
+#'       })
+#'     }
+#'   )
+#' }
 is.fmError <- function(x){
   inherits(x, "fmError")
 }
@@ -80,6 +152,40 @@ is.fmError <- function(x){
 #' 
 #' @return logical
 #' @export
+#' @examples 
+#' if (interactive()) {
+#'   library(shiny)
+#'   plan(multiprocess)
+#'   
+#'   longFun <- function(task, n){
+#'     for (i in seq_len(10)){
+#'       # check if the process has been canceled (every 1s)
+#'       if (fmIsInterrupted(task)) return()
+#'       Sys.sleep(1)
+#'     }
+#'     n
+#'   }
+#'   
+#'   shinyApp(
+#'     ui = basicPage(
+#'       uiOutput("button"), 
+#'       numericInput("n", "n", -3, -5, 5), 
+#'       textOutput("result")
+#'     ),
+#'     server = function(input, output, session){
+#'       fm <- FutureManager$new(input, session)
+#'       output$button <- renderUI(fmRunButton("run", fm))
+#'       Res <- reactiveVal()
+#'       Args <- reactive(list(n = input$n))
+#'       fm$registerRunObserver("run", NULL, Res, longFun, Args, progress = FALSE)
+#'       output$result <- renderText({
+#'         res <- Res()
+#'         fmValidate(res)
+#'         fmGetValue(res)
+#'       })
+#'     }
+#'   )
+#' }
 fmIsInterrupted <- function(task) {
   file.exists(task$cancelFile)
 }
@@ -95,6 +201,40 @@ fmIsInterrupted <- function(task) {
 #' 
 #' @return nothing
 #' @export
+#' @examples 
+#' if (interactive()) {
+#'   library(shiny)
+#'   plan(multiprocess)
+#'   
+#'   longFun <- function(task, n){
+#'     for (i in seq_len(10)){
+#'       if (fmIsInterrupted(task)) return()
+#'       fmUpdateProgress(task, progress = i/10, msg = "busy...")
+#'       Sys.sleep(1)
+#'     }
+#'     n
+#'   }
+#'   
+#'   shinyApp(
+#'     ui = basicPage(
+#'       uiOutput("button"), 
+#'       numericInput("n", "n", -3, -5, 5), 
+#'       textOutput("result")
+#'     ),
+#'     server = function(input, output, session){
+#'       fm <- FutureManager$new(input, session)
+#'       output$button <- renderUI(fmRunButton("run", fm))
+#'       Res <- reactiveVal()
+#'       Args <- reactive(list(n = input$n))
+#'       fm$registerRunObserver("run", "Progress", Res, longFun, Args)
+#'       output$result <- renderText({
+#'         res <- Res()
+#'         fmValidate(res)
+#'         fmGetValue(res)
+#'       })
+#'     }
+#'   )
+#' }
 fmUpdateProgress <- function(task, progress = 0, msg = NULL) {
   jsonlite::write_json(
     x = list(
@@ -112,11 +252,13 @@ fmUpdateProgress <- function(task, progress = 0, msg = NULL) {
 #' 
 #' This function should be used when there's a need to get a value returned by
 #' a background process. In particular, it signalizes any errors that may happen
-#' in the process. Direct access (i.e. x$value) doesn't show errors.
+#' in the process. Direct access (i.e. x[["value"]]) doesn't show errors.
 #' 
 #' The value is NULL for every status, except:
 #' - "success": the value from the process
 #' - "failed": the error message (see fmValidate() for handling this)
+#' 
+#' See \code{\link{fmError}} for some example.
 #' 
 #' @param x fmStatus object
 #' 
@@ -141,6 +283,8 @@ fmGetValue <- function(x) {
 #' error message in case of any issues. Also, it displays helpful messages regarding 
 #' the process start/wait with a CSS formatting.
 #' 
+#' See \code{\link{fmError}} for some example.
+#' 
 #' @param x fmStatus object
 #' @param ... arguments passed to fmNeed function (msgInit and msgRun)
 #' 
@@ -161,7 +305,7 @@ fmValidate <- function(x, ...){
 
 #' Need a valid background process value
 #' 
-#' Ensures the value is valid
+#' Ensures the value is valid.
 #' 
 #' @param x fmStatus object
 #' @param msgInit character string, message that should be displayed when the 
@@ -181,6 +325,11 @@ fmNeed <- function(x, msgInit = "run the process first", msgRun = "wait for the 
 }
 
 #' Generate task ID
+#' 
+#' Use this function if when you don't need an fmRunButton. 
+#' 
+#' See demo app 2 for some example.
+#' system.file("demoapp2", package = "FutureManager")
 #' 
 #' @param id character string, ID pattern
 #' @return character string
