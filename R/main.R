@@ -2,6 +2,12 @@
 #' 
 #' Manages the background processes and also keeps the state.
 #' FutureManager is designed to work with fmRunButton. See demo() for details
+#' 
+#' See demo app (both) for some complete examples:
+#' \itemize{
+#'   \item{With run button:}{ \code{\link{demo}} }
+#'   \item{Without run button:}{ \code{\link{demo_noButton}} }
+#' }
 #' @export
 FutureManager <- R6::R6Class(
   classname = "FutureManager",

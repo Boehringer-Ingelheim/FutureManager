@@ -16,3 +16,9 @@ demo(host = "0.0.0.0", port = 3838L, launch.browser = FALSE)
 \description{
 Runs the demo app that shows the abilities of the package
 }
+\details{
+Demo files location: \code{system.file("demoapp", package = "FutureManager")}
+}
+\examples{
+demo(launch.browser = TRUE)
+}

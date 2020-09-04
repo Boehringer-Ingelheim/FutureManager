@@ -17,3 +17,9 @@ demo_noButton(host = "0.0.0.0", port = 3838L, launch.browser = FALSE)
 Runs another demo app, that doesn't use run button (heavy calculations start 
 on-demand, without additional user action)
 }
+\details{
+Demo files location: \code{system.file("demoapp2", package = "FutureManager")}
+}
+\examples{
+demo_noButton(launch.browser = TRUE)
+}

@@ -16,6 +16,5 @@ character string
 Use this function if when you don't need an fmRunButton.
 }
 \details{
-See demo app 2 for some example.
-system.file("demoapp2", package = "FutureManager")
+See \code{\link{demo_noButton}} for some example
 }

@@ -328,8 +328,7 @@ fmNeed <- function(x, msgInit = "run the process first", msgRun = "wait for the 
 #' 
 #' Use this function if when you don't need an fmRunButton. 
 #' 
-#' See demo app 2 for some example.
-#' system.file("demoapp2", package = "FutureManager")
+#' See \code{\link{demo_noButton}} for some example
 #' 
 #' @param id character string, ID pattern
 #' @return character string

@@ -12,6 +12,12 @@ Background calculations in shiny apps
 Manages the background processes and also keeps the state.
 FutureManager is designed to work with fmRunButton. See demo() for details
 
+See demo app (both) for some complete examples:
+\itemize{
+  \item{With run button:}{ \code{\link{demo}} }
+  \item{Without run button:}{ \code{\link{demo_noButton}} }
+}
+
 
 Note that the long function must be able to detect the cancel. See 
 fmIsInterrupted() for details
