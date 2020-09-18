@@ -17,11 +17,13 @@ FutureManager <- R6::R6Class(
     #' @param input shiny input object
     #' @param session shiny session object
     #' @param opts character, names of options that should be passed to every background process
+    #' @param keepPreviousResults logical, should keep the results from the previous run until the latest ones are available? 
     #' @return MinimalProgress object
-    initialize = function(input, session = shiny::getDefaultReactiveDomain(), opts = c()){
+    initialize = function(input, session = shiny::getDefaultReactiveDomain(), opts = c(), keepPreviousResults = FALSE){
       private$opts <- opts
       private$input <- input
       private$session <- session
+      private$keepPreviousResults <- keepPreviousResults
       
       invisible(self)
     },
@@ -89,11 +91,14 @@ FutureManager <- R6::R6Class(
       )
       private$addTask(task)
       
-      statusVar(fmStatus(
-        id = task$id,
-        status = "running",
-        message = "Task is running"
-      ))
+      oldStatus <- shiny::isolate(statusVar())
+      if (!private$keepPreviousResults || !is.fmStatus(oldStatus) || oldStatus[["status"]] != "success"){
+        statusVar(fmStatus(
+          id = task$id,
+          status = "running",
+          message = "Task is running"
+        ))
+      }
       
       args[["task"]] <- task
       
@@ -336,6 +341,7 @@ FutureManager <- R6::R6Class(
     input = NULL,
     session = NULL,
     opts = c(),
+    keepPreviousResults = FALSE,
     
     addTask = function(task) {
       taskId <- task$id

@@ -47,7 +47,8 @@ Create a new manager object
 \if{html}{\out{<div class="r">}}\preformatted{FutureManager$new(
   input,
   session = shiny::getDefaultReactiveDomain(),
-  opts = c()
+  opts = c(),
+  keepPreviousResults = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -59,6 +60,8 @@ Create a new manager object
 \item{\code{session}}{shiny session object}
 
 \item{\code{opts}}{character, names of options that should be passed to every background process}
+
+\item{\code{keepPreviousResults}}{logical, should keep the results from the previous run until the latest ones are available?}
 }
 \if{html}{\out{</div>}}
 }
