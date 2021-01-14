@@ -75,9 +75,10 @@ FutureManager <- R6::R6Class(
     #' background process
     #' @param finally NULL or function, that will be executed after the process 
     #' finishes. Function should accept 1 argument, the process status (string)
+    #' @param seed passed to future::future
     #' @param ... arguments passed to future::future
     #' @return self
-    run = function(taskId, fun, args, statusVar, opts = c(), finally = NULL, ...){
+    run = function(taskId, fun, args, statusVar, opts = c(), finally = NULL, seed = TRUE, ...){
       if (private$taskExists(taskId)) {
         warning("Task '", taskId, "' is already running!")
         return(invisible(self))
@@ -114,7 +115,7 @@ FutureManager <- R6::R6Class(
             stop(e)
           }
         )
-      }, ...)
+      }, seed = seed, ...)
       
       result <- promises::then(
         promise = result, 

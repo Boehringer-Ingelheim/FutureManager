@@ -116,6 +116,7 @@ Run background process
   statusVar,
   opts = c(),
   finally = NULL,
+  seed = TRUE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -137,6 +138,8 @@ background process}
 
 \item{\code{finally}}{NULL or function, that will be executed after the process 
 finishes. Function should accept 1 argument, the process status (string)}
+
+\item{\code{seed}}{passed to future::future}
 
 \item{\code{...}}{arguments passed to future::future}
 }
