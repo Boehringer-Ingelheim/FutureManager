@@ -283,6 +283,7 @@ FutureManager <- R6::R6Class(
     registerRunObserver = function(inputId, label, statusVar, longFun, Args, 
                                    opts = c(), progress = TRUE, input = NULL){
       taskId <- fmGenerateTaskId(inputId)
+      argsChanged <- FALSE
       
       if (is.null(input)) {
         input <- private$input
@@ -299,6 +300,7 @@ FutureManager <- R6::R6Class(
                 self$showProgress(taskId, label, statusVar)
               }
               
+              argsChanged <<- FALSE
               args <- Args()
               self$run(
                 taskId = taskId, 
@@ -306,8 +308,11 @@ FutureManager <- R6::R6Class(
                 args = args,
                 statusVar = statusVar,
                 opts = opts,
-                finally = function(status){
-                  fmUpdateRunButton(inputId, status, self, private$session)
+                finally = function(taskStatus){
+                  if (argsChanged && taskStatus == "success"){
+                    taskStatus <- "rerun"
+                  }
+                  fmUpdateRunButton(inputId, taskStatus, self, private$session)
                 }
               )
               status <- "running"
@@ -328,6 +333,7 @@ FutureManager <- R6::R6Class(
       shiny::observeEvent(
         eventExpr = Args(),
         handlerExpr = {
+          argsChanged <<- TRUE
           self$outdateRun(inputId, TRUE)
         }
       )
