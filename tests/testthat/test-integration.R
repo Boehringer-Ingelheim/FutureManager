@@ -3,7 +3,8 @@ runClick <- function(app, id, cancel = FALSE){
   app$waitForValue(
     name = id, 
     iotype = "input",
-    ignore = list(cancel, NULL)
+    ignore = list(cancel, NULL),
+    timeout = 20000
   )
 }
 

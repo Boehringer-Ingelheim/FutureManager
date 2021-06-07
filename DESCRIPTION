@@ -1,6 +1,6 @@
 Package: FutureManager
 Type: Package
-Title: Background operations in shiny
+Title: Background Operations in Shiny
 Version: 0.2.6
 Authors@R: c(person("Michal", "Jakubczak", role = c("aut", "cre", "cph"),
                     email = "michal.jakubczak@ardigen.com"),
