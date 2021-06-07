@@ -21,5 +21,7 @@ on-demand, without additional user action)
 Demo files location: \code{system.file("demoapp2", package = "FutureManager")}
 }
 \examples{
+\dontrun{
 demo_noButton(launch.browser = TRUE)
+}
 }
