@@ -20,5 +20,7 @@ Runs the demo app that shows the abilities of the package
 Demo files location: \code{system.file("demoapp", package = "FutureManager")}
 }
 \examples{
+if(interactive()) {
 demo(launch.browser = TRUE)
+}
 }
