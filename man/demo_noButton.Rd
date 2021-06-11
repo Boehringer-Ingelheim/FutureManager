@@ -13,6 +13,9 @@ demo_noButton(host = "0.0.0.0", port = 3838L, launch.browser = FALSE)
 
 \item{launch.browser}{logical, should launch the browser?}
 }
+\value{
+No return value, called for side effects.
+}
 \description{
 Runs another demo app, that doesn't use run button (heavy calculations start 
 on-demand, without additional user action)

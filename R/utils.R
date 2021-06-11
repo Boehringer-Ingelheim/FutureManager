@@ -199,7 +199,7 @@ fmIsInterrupted <- function(task) {
 #' @param progress numeric in range 0..1
 #' @param msg character string, message that will be displayed in the progress bar
 #' 
-#' @return nothing
+#' @return No return value, called for side effects.
 #' @export
 #' @examples 
 #' if (interactive()) {

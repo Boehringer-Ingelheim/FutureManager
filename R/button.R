@@ -54,7 +54,7 @@ fmRunButton <- function(inputId, fm, defaultValue = FALSE, blocked = FALSE){
 #' @param fm FutureManager object
 #' @param session shiny session object
 #' 
-#' @return nothing
+#' @return No return value, called for side effects.
 #' @export
 fmUpdateRunButton <- function(inputId, status, fm, session = shiny::getDefaultReactiveDomain()) {
   isSuccess <- status == "success"
