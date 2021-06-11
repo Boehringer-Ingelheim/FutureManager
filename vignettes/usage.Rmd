@@ -92,7 +92,7 @@ First thing you should do is preparing a background processes strategy. If your 
 
 ```{r step1}
 library(FutureManager)
-plan(multiprocess) # don't forget this line!
+plan(fmParallelStrategy()) # don't forget this line!
 ```
 
 Then, you should add an `fm` object into your server.R like this:
@@ -202,7 +202,7 @@ Here's the working app with all required changes. Enjoy! Note that the table is 
 library(shiny)
 library(ggplot2)
 library(FutureManager)
-plan(multiprocess) # don't forget this line!
+plan(fmParallelStrategy()) # don't forget this line!
 
 longFun <- function(task, xVar, yVar){
   xVar <- sym(xVar)
@@ -322,14 +322,6 @@ longFun <- function(task, xVar, yVar){
 }
 ```
 
-And that's it! For more advanced example please use `FutureManager::demo()`
-
 # Final note
 
-For optimal performance please use `multiprocess` strategy in `plan()` and launch the app using Rscript. You may experience a long app startup time and some lag when running background processes using RStudio, because it uses `multisession` strategy.
-
-You can run the demo app using Rscript like this:
-
-```
-Rscript -e 'FutureManager::demo()'
-```
+And that's it! For more advanced example please use `FutureManager::demo()`

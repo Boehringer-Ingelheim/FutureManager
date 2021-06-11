@@ -23,7 +23,7 @@ to the main process, i.e. to display a progress in the application
 \examples{
 if (interactive()) {
   library(shiny)
-  plan(multiprocess)
+  plan(fmParallelStrategy())
   
   longFun <- function(task, n){
     for (i in seq_len(10)){

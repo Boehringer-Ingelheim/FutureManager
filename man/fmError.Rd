@@ -19,7 +19,7 @@ calculations etc)
 \examples{
 if (interactive()) {
   library(shiny)
-  plan(multiprocess)
+  plan(fmParallelStrategy())
   
   longFun <- function(task, n){
     if (n < 0) return(fmError("n must be >= 0"))
