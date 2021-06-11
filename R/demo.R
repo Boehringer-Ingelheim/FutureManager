@@ -9,6 +9,9 @@
 #' @param port app port
 #' @param launch.browser logical, should launch the browser?
 #' @export
+#' 
+#' @return No return value, called for side effects.
+#' 
 #' @examples 
 #' if(interactive()) {
 #' demo(launch.browser = TRUE)
@@ -33,6 +36,8 @@ demo <- function(host = "0.0.0.0", port = 3838L, launch.browser = FALSE){
 #' @param port app port
 #' @param launch.browser logical, should launch the browser?
 #' @export
+#' 
+#' @return No return value, called for side effects.
 #' @examples 
 #' if(interactive()) {
 #' demo_noButton(launch.browser = TRUE)

@@ -21,7 +21,7 @@ fmUpdateRunButton(
 \item{session}{shiny session object}
 }
 \value{
-nothing
+No return value, called for side effects.
 }
 \description{
 Updates the run button (on frontend) and also its state (on backend)

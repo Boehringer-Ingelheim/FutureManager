@@ -62,7 +62,7 @@ is.fmStatus <- function(x) {
 #' @examples 
 #' if (interactive()) {
 #'   library(shiny)
-#'   plan(multiprocess)
+#'   plan(fmParallelStrategy())
 #'   
 #'   longFun <- function(task, n){
 #'     if (n < 0) return(fmError("n must be >= 0"))
@@ -107,7 +107,7 @@ fmError <- function(msg){
 #' @examples 
 #' if (interactive()) {
 #'   library(shiny)
-#'   plan(multiprocess)
+#'   plan(fmParallelStrategy())
 #'   
 #'   helper <- function(n){
 #'     if (n < 0) return(fmError("n must be >= 0"))
@@ -155,7 +155,7 @@ is.fmError <- function(x){
 #' @examples 
 #' if (interactive()) {
 #'   library(shiny)
-#'   plan(multiprocess)
+#'   plan(fmParallelStrategy())
 #'   
 #'   longFun <- function(task, n){
 #'     for (i in seq_len(10)){
@@ -199,12 +199,12 @@ fmIsInterrupted <- function(task) {
 #' @param progress numeric in range 0..1
 #' @param msg character string, message that will be displayed in the progress bar
 #' 
-#' @return nothing
+#' @return No return value, called for side effects.
 #' @export
 #' @examples 
 #' if (interactive()) {
 #'   library(shiny)
-#'   plan(multiprocess)
+#'   plan(fmParallelStrategy())
 #'   
 #'   longFun <- function(task, n){
 #'     for (i in seq_len(10)){

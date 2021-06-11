@@ -20,6 +20,9 @@ getValue <- function(app, name, input = TRUE){
 test_that(
   desc = "Run tasks work properly",
   code = {
+    
+    testthat::skip_on_cran()
+    
     # run the app
     app <- shinytest::ShinyDriver$new(
       path = system.file("demoapp", package = "FutureManager"),
@@ -96,6 +99,9 @@ test_that(
 test_that(
   desc = "Cancel and error handling",
   code = {
+    
+    testthat::skip_on_cran()
+    
     app <- shinytest::ShinyDriver$new(
       path = system.file("demoapp", package = "FutureManager"),
       loadTimeout = 10000 # 10s to spin up processes in Rstudio

@@ -14,7 +14,7 @@ fmUpdateProgress(task, progress = 0, msg = NULL)
 \item{msg}{character string, message that will be displayed in the progress bar}
 }
 \value{
-nothing
+No return value, called for side effects.
 }
 \description{
 This function allows to pass progress info from the background process
@@ -23,7 +23,7 @@ to the main process, i.e. to display a progress in the application
 \examples{
 if (interactive()) {
   library(shiny)
-  plan(multiprocess)
+  plan(fmParallelStrategy())
   
   longFun <- function(task, n){
     for (i in seq_len(10)){

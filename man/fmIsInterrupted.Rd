@@ -18,7 +18,7 @@ Basically, it checks if the process has been canceled by the user.
 \examples{
 if (interactive()) {
   library(shiny)
-  plan(multiprocess)
+  plan(fmParallelStrategy())
   
   longFun <- function(task, n){
     for (i in seq_len(10)){

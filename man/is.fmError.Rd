@@ -18,7 +18,7 @@ This is useful when using helper functions in the long running function.
 \examples{
 if (interactive()) {
   library(shiny)
-  plan(multiprocess)
+  plan(fmParallelStrategy())
   
   helper <- function(n){
     if (n < 0) return(fmError("n must be >= 0"))

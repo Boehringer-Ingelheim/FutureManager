@@ -9,7 +9,6 @@ Authors@R: c(person("Michal", "Jakubczak", role = c("aut", "cre", "cph"),
 Description: Enables background operations in shiny.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends:
       R (>= 3.6.0),
       shinyBS
